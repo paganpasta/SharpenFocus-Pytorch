@@ -4,8 +4,8 @@
 ```diff
 - Unofficial repository
 ```
-Doesn't appear to provide any significant improvment over baseline. 
-The implementation may have errors, please be careful.
+The current don't indicate prominent improvement over the baseline. 
+The implementation may have errors, please be cautious.
 
 I'll be working on adding some visualisations to verify the attention maps.
 ## Results
@@ -22,7 +22,7 @@ I'll be working on adding some visualisations to verify the attention maps.
 
 ### Usage
 
-`python main.py --dataset cifar10 --batch-size 128 --prefix run0 --epochs 300 --milestones 75 150 225`
+`python main.py --dataset cifar10 --batch-size 128 --prefix run0 --epochs 350 --milestones 75 150 225 300`
 
 
 ### Acknowledgement
