@@ -4,10 +4,10 @@
 ```diff
 - Unofficial repository
 ```
-The current don't indicate prominent improvement over the baseline. 
+The current results don't indicate any significant improvement over the baseline. 
 The implementation may have errors, please be cautious.
 
-I'll be working on adding some visualisations to verify the attention maps.
+I'll be adding some visualisations to verify the attention maps.
 ## Results
 
 | Dataset | CIFAR-10  | CIFAR-100  |  STL-10 |
