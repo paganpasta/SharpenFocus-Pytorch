@@ -15,8 +15,8 @@ There might be errors in the code please use it with caution. I'll be updating t
 
 | Dataset | CIFAR-10  | CIFAR-100  |  STL-10 |
 |:-------:|:---------:|:----------:|:-------:|
-|Resnet-18|   94.25   |     --     |  81.85  |
-|SFocus-18|   94.16   |    71.3    |  82.77  |
+|Resnet-18|   94.25   |   73.32    |  81.85  |
+|SFocus-18|   94.16   |   71.30    |  82.77  |
 
 
 ### Requirements
