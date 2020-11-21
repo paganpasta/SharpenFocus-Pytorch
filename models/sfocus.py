@@ -23,10 +23,6 @@ class SFOCUS(nn.Module):
         # Register hooks
         self._register_hooks(grad_layers)
 
-        # sigma, omega for making the soft-mask
-        self.sigma = 0.25
-        self.omega = 100
-
     def _register_hooks(self, grad_layers):
         def forward_hook(name, module, grad_input, grad_output):
             self.feed_forward_features[name] = grad_output
@@ -39,14 +35,8 @@ class SFOCUS(nn.Module):
             if idx in self.grad_layers:
                 m.register_forward_hook(partial(forward_hook, idx))
                 m.register_backward_hook(partial(backward_hook, idx))
-                print("Register forward hook !")
-                print("Register backward hook !")
                 gradient_layers_found += 1
-                
-
-        # for our own sanity, confirm its existence
-        if gradient_layers_found != 2:
-            raise AttributeError('Gradient layers %s not found in the internal model' % grad_layers)
+        assert gradient_layers_found == 2
 
     def _to_ohe(self, labels):
         ohe = torch.zeros((labels.size(0), self.num_classes), requires_grad=False).cuda()
@@ -96,10 +86,8 @@ class SFOCUS(nn.Module):
         conf_1he = self._to_ohe(preds).cuda()
         gt_1he = self._to_ohe(labels).cuda()
         
-        #Store attention w.r.t correct labels
-        
+        #Store attention w.r.t conf labels
         self.populate_grads(logits, conf_1he)
-        #Store attention w.r.t confused labels
         for idx, name in enumerate(self.grad_layers):
             if idx == 0:
                  backward_feature = self.backward_features[name]
@@ -112,6 +100,7 @@ class SFOCUS(nn.Module):
                  weights = F.adaptive_avg_pool2d(F.relu(backward_feature), 1)
                  A_conf_la = F.relu(torch.mul(forward_feature, weights).sum(dim=1, keepdim=True))
         
+        #Store attention w.r.t correct labels
         self.populate_grads(logits, gt_1he)
         for idx, name in enumerate(self.grad_layers):
             if idx == 0:
@@ -130,6 +119,8 @@ class SFOCUS(nn.Module):
         L_as_in, mask_in = self.loss_attention_separation(A_t_in, A_conf_in)
         #Loss Attention Consistency
         L_ac_in = self.loss_attention_consistency(A_t_in, mask_in)
+        
+        # predictions, Loss AS_last_layer, Loss AS_in_layer, Loss AC_in_layer, heatmap as per paper
         return logits, L_as_la, L_as_in, L_ac_in, A_t_la
         
       

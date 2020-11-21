@@ -4,9 +4,10 @@
 ```diff
 - Unofficial repository
 ```
-There might be errors in the code please use it with caution. I'll be updating the results on CIFAR-10, CIFAR-100 and STL-10 as I get some time.
+Doesn't appear to provide any significant improvment over baseline. 
+The implementation may have errors, please be careful.
 
-
+I'll be working on adding some visualisations to verify the attention maps.
 ## Results
 
 | Dataset | CIFAR-10  | CIFAR-100  |  STL-10 |
@@ -17,7 +18,7 @@ There might be errors in the code please use it with caution. I'll be updating t
 
 ### Requirements
 
-`Pytorch`
+`Pytorch 1.2`
 
 ### Usage
 
