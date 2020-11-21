@@ -4,10 +4,6 @@
 ```diff
 - Unofficial repository
 ```
-
-```diff
-- Work in progress.
-```
 There might be errors in the code please use it with caution. I'll be updating the results on CIFAR-10, CIFAR-100 and STL-10 as I get some time.
 
 
@@ -45,4 +41,16 @@ booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vi
 month = {October},
 year = {2019}
 } 
+```
+
+Code
+```
+@misc{sfocus,
+  author = {Aditya, Singh},
+  title = {Sharpen Focus: Learning With Attention Separability and Consistency},
+  year = {2020},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/MacroMayhem/SharpenFocus-Pytorch}}
+}
 ```
