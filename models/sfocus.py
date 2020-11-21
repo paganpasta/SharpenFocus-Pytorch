@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision import models
 from functools import partial
 import models.resnet as resnet
 
@@ -125,15 +124,15 @@ class SFOCUS(nn.Module):
         
       
 def sfocus18(num_classes, pretrained=False):
-    grad_layers = ['layer3', 'layer4']
+    grad_layers = ['conv4_x', 'conv5_x']
     base = resnet.resnet18(num_classes=num_classes)
     model = SFOCUS(base, grad_layers, num_classes)
     return model
 
 
 if __name__ == '__main__':
-    model = sfocus18('large', 10).cuda()
-    sample_x = torch.randn([5, 3, 224, 224])
+    model = sfocus18(10).cuda()
+    sample_x = torch.randn([5, 3, 32, 32])
     sample_y = torch.tensor([i for i in range(5)])
     model.train()
     a, b, c, d, e = model(sample_x.cuda(), sample_y.cuda())
