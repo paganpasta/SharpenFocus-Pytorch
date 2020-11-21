@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
 from functools import partial
-import MODELS.small_resnet as small
+import models.resnet as resnet
 
 class SFOCUS(nn.Module):
     def __init__(self, model, grad_layers, num_classes):
@@ -135,7 +135,7 @@ class SFOCUS(nn.Module):
       
 def sfocus18(num_classes, pretrained=False):
     grad_layers = ['layer3', 'layer4']
-    base = models.resnet18(num_classes=num_classes, pretrained=pretrained)
+    base = resnet.resnet18(num_classes=num_classes)
     model = SFOCUS(base, grad_layers, num_classes)
     return model
 
