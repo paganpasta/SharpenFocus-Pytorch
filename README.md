@@ -47,7 +47,7 @@ year = {2019}
 Code
 ```
 @misc{sfocus,
-  author = {Aditya, Singh},
+  author = {Singh, Aditya},
   title = {Sharpen Focus: Learning With Attention Separability and Consistency},
   year = {2020},
   publisher = {GitHub},
