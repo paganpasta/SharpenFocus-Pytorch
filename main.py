@@ -13,11 +13,13 @@ import torch.utils.data
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
+from torchvision.utils import make_grid, save_image
 from data_utils import get_datasets
 from models.sfocus import sfocus18
+from PIL import Image
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
-parser.add_argument('--dataset', help='Dataset to train')
+parser.add_argument('--dataset', help='Dataor Integral Object Attention githubor Integral Object Attention githubset to train')
 parser.add_argument('--ngpu', default=1, type=int, metavar='G',
                     help='number of gpus to use')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
@@ -57,7 +59,7 @@ def main():
     torch.cuda.manual_seed_all(args.seed)
     random.seed(args.seed)
     
-    train_dataset, val_dataset, num_classes = get_datasets(args.dataset)
+    train_dataset, val_dataset, num_classes, unorm = get_datasets(args.dataset)
     # create model
     model = sfocus18(num_classes, pretrained=False)
     # define loss function (criterion) and optimizer
@@ -96,7 +98,7 @@ def main():
     # Data loading code
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True)
     if args.evaluate:
-        validate(val_loader, model, criterion, 0)
+        validate(val_loader, model, criterion, unorm, -1)
         return
 
     train_sampler = None
@@ -110,7 +112,7 @@ def main():
         train(train_loader, model, criterion, optimizer, epoch)
         
         # evaluate on validation set
-        prec1 = validate(val_loader, model, criterion, epoch)
+        prec1 = validate(val_loader, model, criterion, unorm, epoch)
         
         # remember best prec@1 and save checkpoint
         is_best = prec1 > best_prec1
@@ -172,7 +174,22 @@ def train(train_loader, model, criterion, optimizer, epoch):
                    epoch, i, len(train_loader), batch_time=batch_time,
                    data_time=data_time, loss=losses, top1=top1, top5=top5))
 
-def validate(val_loader, model, criterion, epoch):
+
+def vis_heatmaps(hmaps, inputs, unnorm, epoch):
+    f_shape = hmaps[0].shape
+    i_shape = inputs[0].shape
+    img_tensors = []
+    for idx, image in enumerate(inputs):
+        hmap = hmaps[idx]
+        if f_shape[0] == 1:
+            hmap = torch.cat((hmap, torch.zeros(2, f_shape[1], f_shape[2])))
+        hmap = (transforms.ToPILImage()(hmap)).resize((i_shape[1], i_shape[2]))
+        pil_image = transforms.ToPILImage()(torch.clamp(unnorm(image), 0, 1))
+        res = Image.blend(pil_image, hmap, 0.5)
+        img_tensors.append(transforms.ToTensor()(res))
+    save_image(img_tensors, '{}.png'.format(epoch), nrow=int(inputs.shape[0]/2))
+
+def validate(val_loader, model, criterion, unorm, epoch):
       batch_time = AverageMeter()
       losses = AverageMeter()
       top1 = AverageMeter()
@@ -188,7 +205,8 @@ def validate(val_loader, model, criterion, epoch):
         # compute output
         output, l1, l2, l3, hmaps  = model(inputs, target)
         loss = criterion(output, target)+l1 + l2 + l3
-        
+        if i == 0:    #SAVE HEATMAP
+            vis_heatmaps(hmaps.cpu(), inputs.cpu(), unorm, epoch)
         # measure accuracy and record loss
         prec1, prec5 = accuracy(output.data, target, topk=(1, 5))
         losses.update(loss.item(), inputs.size(0))

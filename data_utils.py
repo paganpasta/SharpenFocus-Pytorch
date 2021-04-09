@@ -12,37 +12,55 @@ def get_mean_var_classes(name):
     return None
 
 
+class UnNormalize(object):
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, tensor):
+        """
+        Args:
+            tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
+        Returns:
+            Tensor: Normalized image.
+        """
+        for t, m, s in zip(tensor, self.mean, self.std):
+            t.mul_(s).add_(m)
+            # The normalize code -> t.sub_(m).div_(s)
+        return tensor
+
 def get_datasets(name):
     mean, var, num_classes = get_mean_var_classes(name)
     if name == 'cifar10':
-        transform_train = torchvision.transforms.Compose([
-            torchvision.transforms.RandomCrop(32, padding=4),
-            torchvision.transforms.RandomHorizontalFlip(),
-            torchvision.transforms.RandomRotation(15),
-            torchvision.transforms.ToTensor(),
-            torchvision.transforms.Normalize(mean, var)])
-        transform_test = torchvision.transforms.Compose([torchvision.transforms.ToTensor(), torchvision.transforms.Normalize(mean, var)])
+        transform_train = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(15),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, var)])
+        transform_test = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean, var)])
         train = datasets.CIFAR10(root='./data/', train=True, download=False, transform=transform_train)
         test = datasets.CIFAR10(root='./data/', train=False, download=False, transform=transform_test)
     elif name == 'cifar100':
-        transform_train = torchvision.transforms.Compose([
-            torchvision.transforms.RandomCrop(32, padding=4),
-            torchvision.transforms.RandomHorizontalFlip(),
-            torchvision.transforms.RandomRotation(15),
-            torchvision.transforms.ToTensor(),
-            torchvision.transforms.Normalize(mean, var)])
-        transform_test = torchvision.transforms.Compose([torchvision.transforms.ToTensor(), torchvision.transforms.Normalize(mean, var)])
+        transform_train = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(15),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, var)])
+        transform_test = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean, var)])
         train = datasets.CIFAR100(root='./data/', train=True, download=False, transform=transform_train)
         test = datasets.CIFAR100(root='./data/', train=False, download=False, transform=transform_test)
     elif name == 'stl10':
-        transform_train = torchvision.transforms.Compose([
-            torchvision.transforms.RandomCrop(96, padding=4),
-            torchvision.transforms.RandomHorizontalFlip(),
-            torchvision.transforms.RandomRotation(15),
-            torchvision.transforms.ToTensor(),
-            torchvision.transforms.Normalize(mean, var)])
-        transform_test = torchvision.transforms.Compose([ torchvision.transforms.ToTensor(), torchvision.transforms.Normalize(mean, var)])
+        transform_train = transforms.Compose([
+            transforms.RandomCrop(96, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(15),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, var)])
+        transform_test = transforms.Compose([ transforms.ToTensor(), transforms.Normalize(mean, var)])
         train = datasets.STL10(root='./data/', split='train', download=False, transform=transform_train)
         test = datasets.STL10(root='./data/', split='test', download=False, transform=transform_test)
-    return train, test, num_classes
+    unorm = UnNormalize(mean, var)
+    return train, test, num_classes, unorm
 
