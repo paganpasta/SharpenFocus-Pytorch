@@ -1,2 +1,5 @@
 .idea
 data/
+checkpoints/
+__pycache__
+models/__pycache__

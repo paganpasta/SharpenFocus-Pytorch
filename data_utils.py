@@ -39,7 +39,7 @@ def get_datasets(name):
             transforms.ToTensor(),
             transforms.Normalize(mean, var)])
         transform_test = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean, var)])
-        train = datasets.CIFAR10(root='./data/', train=True, download=False, transform=transform_train)
+        train = datasets.CIFAR10(root='./data/', train=True, download=True, transform=transform_train)
         test = datasets.CIFAR10(root='./data/', train=False, download=False, transform=transform_test)
     elif name == 'cifar100':
         transform_train = transforms.Compose([
@@ -49,7 +49,7 @@ def get_datasets(name):
             transforms.ToTensor(),
             transforms.Normalize(mean, var)])
         transform_test = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean, var)])
-        train = datasets.CIFAR100(root='./data/', train=True, download=False, transform=transform_train)
+        train = datasets.CIFAR100(root='./data/', train=True, download=True, transform=transform_train)
         test = datasets.CIFAR100(root='./data/', train=False, download=False, transform=transform_test)
     elif name == 'stl10':
         transform_train = transforms.Compose([

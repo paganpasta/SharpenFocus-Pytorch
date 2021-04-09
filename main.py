@@ -46,8 +46,6 @@ parser.add_argument("--prefix", type=str, required=True, metavar='PFX', help='pr
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluation only')
 best_prec1 = 0
 
-if not os.path.exists('./checkpoints/'):
-    os.mkdir('./checkpoints/')
 
 def main():
     global args, best_prec1
@@ -96,10 +94,12 @@ def main():
     cudnn.benchmark = True
 
     # Data loading code
-    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=64, shuffle=False, num_workers=args.workers, pin_memory=True)
     if args.evaluate:
-        validate(val_loader, model, criterion, unorm, -1)
+        validate(val_loader, model, criterion, unorm, -1, PATH)
         return
+    PATH = os.path.join('./checkpoints/SF', args.dataset, args.prefix)
+    os.makedirs(PATH, exist_ok=True)
 
     train_sampler = None
     train_loader = torch.utils.data.DataLoader(
@@ -112,7 +112,7 @@ def main():
         train(train_loader, model, criterion, optimizer, epoch)
         
         # evaluate on validation set
-        prec1 = validate(val_loader, model, criterion, unorm, epoch)
+        prec1 = validate(val_loader, model, criterion, unorm, epoch, PATH)
         
         # remember best prec@1 and save checkpoint
         is_best = prec1 > best_prec1
@@ -142,13 +142,12 @@ def train(train_loader, model, criterion, optimizer, epoch):
         data_time.update(time.time() - end)
         optimizer.zero_grad()
         
-        target = target.cuda(async=True)
-        inputs = inputs.cuda(async=True)
+        target = target.cuda()
+        inputs = inputs.cuda()
         
         # compute output
         output, l1, l2, l3, _ = model(inputs, target)
         loss = criterion(output, target)+l1+l2+l3
-        print(loss) 
         
         # measure accuracy and record loss
         prec1, prec5 = accuracy(output.data, target, topk=(1, 5))
@@ -175,7 +174,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
                    data_time=data_time, loss=losses, top1=top1, top5=top5))
 
 
-def vis_heatmaps(hmaps, inputs, unnorm, epoch):
+def vis_heatmaps(hmaps, inputs, unnorm, epoch, path):
     f_shape = hmaps[0].shape
     i_shape = inputs[0].shape
     img_tensors = []
@@ -187,9 +186,9 @@ def vis_heatmaps(hmaps, inputs, unnorm, epoch):
         pil_image = transforms.ToPILImage()(torch.clamp(unnorm(image), 0, 1))
         res = Image.blend(pil_image, hmap, 0.5)
         img_tensors.append(transforms.ToTensor()(res))
-    save_image(img_tensors, '{}.png'.format(epoch), nrow=int(inputs.shape[0]/2))
+    save_image(img_tensors, '{}/{}.png'.format(path, epoch), nrow=8)
 
-def validate(val_loader, model, criterion, unorm, epoch):
+def validate(val_loader, model, criterion, unorm, epoch, PATH):
       batch_time = AverageMeter()
       losses = AverageMeter()
       top1 = AverageMeter()
@@ -199,14 +198,14 @@ def validate(val_loader, model, criterion, unorm, epoch):
       model.eval()
       end = time.time()
       for i, (inputs, target) in enumerate(val_loader):
-        target = target.cuda(async=True)
-        inputs = inputs.cuda(async=True)
+        target = target.cuda()
+        inputs = inputs.cuda()
         
         # compute output
         output, l1, l2, l3, hmaps  = model(inputs, target)
         loss = criterion(output, target)+l1 + l2 + l3
         if i == 0:    #SAVE HEATMAP
-            vis_heatmaps(hmaps.cpu(), inputs.cpu(), unorm, epoch)
+            vis_heatmaps(hmaps.cpu(), inputs.cpu(), unorm, epoch, PATH)
         # measure accuracy and record loss
         prec1, prec5 = accuracy(output.data, target, topk=(1, 5))
         losses.update(loss.item(), inputs.size(0))
