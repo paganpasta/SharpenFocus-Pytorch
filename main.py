@@ -122,7 +122,7 @@ def main():
             'state_dict': model.state_dict(),
             'best_prec1': best_prec1,
             'optimizer' : optimizer.state_dict(),
-        }, is_best, args.prefix)
+        }, is_best, PATH)
         scheduler.step()
 
 
@@ -231,8 +231,8 @@ def validate(val_loader, model, criterion, unorm, epoch, PATH):
       return top1.avg
 
 
-def save_checkpoint(state, is_best, prefix):
-    filename='./checkpoints/%s_checkpoint.pth.tar'%prefix
+def save_checkpoint(state, is_best, path):
+    filename='{}/checkpoint.pth.tar'.format(path)
     if is_best:
         torch.save(state, filename)
 
